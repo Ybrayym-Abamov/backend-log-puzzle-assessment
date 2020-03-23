@@ -16,10 +16,12 @@ Here's what a puzzle url looks like:
 
 """
 
+__author__ = """ Ybrayym Abamov, Mustafa Prodhan, Mike Alnakhale """
+
 import os
 import re
 import sys
-import urllib
+import urllib.request
 import argparse
 
 
@@ -28,8 +30,14 @@ def read_urls(filename):
     extracting the hostname from the filename itself.
     Screens out duplicate urls and returns the urls sorted into
     increasing order."""
-    # +++your code here+++
-    pass
+    with open(filename, 'r') as f:
+        file_ = f.read()
+    correct_URLs = []
+    exracted_URLs = list(set(re.findall(r"\S+puzzle\S+", file_, re.DOTALL)))
+    for url in exracted_URLs:
+        correct_URLs.append("https://code.google.com" + url)
+    correct_URLs = sorted(correct_URLs, key=lambda url: url[-8:])
+    return correct_URLs
 
 
 def download_images(img_urls, dest_dir):
@@ -40,14 +48,35 @@ def download_images(img_urls, dest_dir):
     with an img tag to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
-    pass
+    print('Downloading images into {}...'.format(dest_dir))
+    images = []
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+        # os.chdir(dest_dir)
+    for idx, url in enumerate(img_urls):
+        image_f = f"img{idx}.jpg"
+        print('Downloading ' + image_f)
+        returl = urllib.request.urlretrieve(url, f"{dest_dir}/{image_f}") # downloading the image URLs
+        images.append(image_f)
+    with open(f'{dest_dir}/index.html', 'w') as f:
+        f.write("""
+        <html>
+            <title>Code Cracked</title>
+            <body>
+                <h1>TADAAAAA!</h1>
+        """)
+        for image in images:
+            f.write(f'<img src="{image}" />')
+        f.write("""
+            </body>
+        </html>""")
 
 
 def create_parser():
     """Create an argument parser object"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--todir',  help='destination directory for downloaded images')
+    parser.add_argument(
+        '-d', '--todir',  help='destination directory for downloaded images')
     parser.add_argument('logfile', help='apache logfile to extract urls from')
 
     return parser
